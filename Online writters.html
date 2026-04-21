@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Writers</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --ink:#0d0d0d;--paper:#faf8f3;--cream:#f2eedf;--gold:#c89b3c;--gold-light:#f0d98a;
+    --sage:#3a5a40;--sage-light:#d4e8d9;--rust:#8b3a2a;--muted:#6b6355;
+    --white:#ffffff;--card:#fffdf7;--border:#e0d9c8;--shadow:rgba(0,0,0,0.08);
+    --radius:12px;--font-display:'Playfair Display',serif;--font-body:'DM Sans',sans-serif;
+  }
+  body{font-family:var(--font-body);background:var(--paper);color:var(--ink);overflow-x:hidden;min-height:100vh}
+
+  /* SCREENS */
+  .screen{display:none;min-height:100vh;width:100%;position:relative}
+  .screen.active{display:flex}
+
+  /* ─── SPLASH ─── */
+  #splash{flex-direction:column;align-items:center;justify-content:center;
+    background:var(--ink);overflow:hidden;position:relative}
+  #splash canvas{position:absolute;top:0;left:0;width:100%;height:100%;opacity:.18}
+  .splash-content{position:relative;z-index:2;text-align:center;padding:2rem}
+  .splash-icon{width:90px;height:90px;margin:0 auto 1.5rem;
+    background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;
+    animation:iconPop .8s cubic-bezier(.34,1.56,.64,1) both;animation-delay:.3s;opacity:0}
+  .splash-icon svg{width:46px;height:46px;fill:var(--ink)}
+  @keyframes iconPop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+  .splash-title{font-family:var(--font-display);font-size:clamp(2.8rem,6vw,5rem);font-weight:900;
+    color:var(--white);line-height:1;opacity:0;animation:fadeUp .8s ease forwards;animation-delay:.7s}
+  .splash-sub{font-size:1.05rem;color:var(--gold-light);margin-top:.8rem;letter-spacing:.12em;
+    text-transform:uppercase;opacity:0;animation:fadeUp .8s ease forwards;animation-delay:1s}
+  .splash-tagline{font-family:var(--font-display);font-style:italic;font-size:1.15rem;
+    color:#b0a89a;margin-top:1.5rem;opacity:0;animation:fadeUp .8s ease forwards;animation-delay:1.3s}
+  .splash-dots{display:flex;gap:10px;margin-top:2.5rem;justify-content:center;
+    opacity:0;animation:fadeUp .5s ease forwards;animation-delay:1.8s}
+  .splash-dots span{width:8px;height:8px;border-radius:50%;background:var(--gold);
+    animation:dotBounce 1.2s infinite ease-in-out}
+  .splash-dots span:nth-child(2){animation-delay:.2s}
+  .splash-dots span:nth-child(3){animation-delay:.4s}
+  @keyframes dotBounce{0%,80%,100%{transform:scale(0.8);opacity:.4}40%{transform:scale(1.2);opacity:1}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ─── LOGIN ─── */
+  #login{flex-direction:column;align-items:center;justify-content:center;
+    background:linear-gradient(145deg,var(--cream) 0%,var(--paper) 100%);padding:2rem;
+    animation:screenIn .5s ease}
+  @keyframes screenIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .login-card{background:var(--white);border:1px solid var(--border);border-radius:20px;
+    padding:2.8rem 2.5rem;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(0,0,0,.1)}
+  .login-logo{display:flex;align-items:center;gap:.7rem;margin-bottom:2rem;justify-content:center}
+  .login-logo-icon{width:40px;height:40px;background:var(--gold);border-radius:10px;
+    display:flex;align-items:center;justify-content:center}
+  .login-logo-icon svg{width:22px;height:22px;fill:var(--ink)}
+  .login-logo-text{font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:var(--ink)}
+  .login-h{font-family:var(--font-display);font-size:1.7rem;font-weight:700;text-align:center;
+    margin-bottom:.4rem}
+  .login-p{font-size:.9rem;color:var(--muted);text-align:center;margin-bottom:2rem}
+  .google-btn{width:100%;border:1.5px solid var(--border);background:var(--white);
+    border-radius:10px;padding:.85rem;display:flex;align-items:center;justify-content:center;
+    gap:.7rem;cursor:pointer;font-family:var(--font-body);font-size:.95rem;font-weight:500;
+    color:var(--ink);transition:all .2s;margin-bottom:1.2rem}
+  .google-btn:hover{border-color:#4285F4;background:#f6f9ff;transform:translateY(-1px)}
+  .google-btn svg{width:20px;height:20px}
+  .divider{display:flex;align-items:center;gap:.8rem;margin-bottom:1.2rem}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+  .divider span{font-size:.8rem;color:var(--muted)}
+  .form-group{margin-bottom:1rem}
+  .form-group label{display:block;font-size:.85rem;font-weight:500;margin-bottom:.4rem;color:var(--ink)}
+  .form-group input{width:100%;border:1.5px solid var(--border);border-radius:9px;
+    padding:.75rem 1rem;font-family:var(--font-body);font-size:.95rem;background:var(--paper);
+    color:var(--ink);transition:border .2s,box-shadow .2s;outline:none}
+  .form-group input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,155,60,.15)}
+  .login-btn{width:100%;background:var(--ink);color:var(--white);border:none;border-radius:10px;
+    padding:.9rem;font-family:var(--font-body);font-size:1rem;font-weight:600;cursor:pointer;
+    transition:all .2s;margin-top:.5rem;display:flex;align-items:center;justify-content:center;gap:.5rem}
+  .login-btn:hover{background:#2a2520;transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.2)}
+  .login-footer{text-align:center;margin-top:1.5rem;font-size:.85rem;color:var(--muted)}
+  .login-footer a{color:var(--gold);text-decoration:none;font-weight:500;cursor:pointer}
+
+  /* ─── HOME ─── */
+  #home{flex-direction:column;background:var(--paper);animation:screenIn .5s ease}
+  .navbar{display:flex;align-items:center;justify-content:space-between;
+    padding:.9rem 1.6rem;background:var(--white);border-bottom:1px solid var(--border);
+    position:sticky;top:0;z-index:100}
+  .nav-logo{display:flex;align-items:center;gap:.6rem}
+  .nav-logo-icon{width:34px;height:34px;background:var(--gold);border-radius:8px;
+    display:flex;align-items:center;justify-content:center}
+  .nav-logo-icon svg{width:18px;height:18px;fill:var(--ink)}
+  .nav-logo-text{font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:var(--ink)}
+  .nav-right{display:flex;align-items:center;gap:1rem}
+  .nav-avatar{width:36px;height:36px;border-radius:50%;background:var(--gold);
+    display:flex;align-items:center;justify-content:center;font-weight:600;font-size:.85rem;
+    color:var(--ink);cursor:pointer}
+  .nav-btn{background:var(--ink);color:var(--white);border:none;border-radius:8px;
+    padding:.45rem .9rem;font-family:var(--font-body);font-size:.85rem;font-weight:500;cursor:pointer;
+    transition:background .2s}
+  .nav-btn:hover{background:#2a2520}
+
+  .home-body{padding:1.5rem;max-width:1100px;margin:0 auto;width:100%}
+  .hero-banner{background:var(--ink);border-radius:18px;padding:2.2rem 2.5rem;
+    margin-bottom:2rem;position:relative;overflow:hidden;color:var(--white)}
+  .hero-banner::before{content:'';position:absolute;right:-40px;top:-40px;
+    width:220px;height:220px;border-radius:50%;background:var(--gold);opacity:.12}
+  .hero-banner::after{content:'';position:absolute;right:40px;bottom:-60px;
+    width:160px;height:160px;border-radius:50%;background:var(--gold);opacity:.07}
+  .hero-banner h1{font-family:var(--font-display);font-size:clamp(1.5rem,3vw,2.2rem);
+    font-weight:900;position:relative;line-height:1.2}
+  .hero-banner p{margin-top:.6rem;color:#b0a89a;font-size:.95rem;max-width:480px;position:relative}
+  .hero-actions{display:flex;gap:.8rem;margin-top:1.5rem;flex-wrap:wrap}
+  .btn-gold{background:var(--gold);color:var(--ink);border:none;border-radius:9px;
+    padding:.7rem 1.4rem;font-family:var(--font-body);font-size:.9rem;font-weight:600;
+    cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.4rem}
+  .btn-gold:hover{background:var(--gold-light);transform:translateY(-1px)}
+  .btn-outline-white{background:transparent;color:var(--white);border:1.5px solid rgba(255,255,255,.35);
+    border-radius:9px;padding:.7rem 1.4rem;font-family:var(--font-body);font-size:.9rem;font-weight:500;
+    cursor:pointer;transition:all .2s}
+  .btn-outline-white:hover{border-color:var(--white);background:rgba(255,255,255,.08)}
+
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1.2rem}
+  .section-title{font-family:var(--font-display);font-size:1.3rem;font-weight:700;color:var(--ink)}
+  .section-link{font-size:.85rem;color:var(--gold);text-decoration:none;cursor:pointer;font-weight:500}
+
+  /* Price suggestion cards */
+  .suggestion-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-bottom:2rem}
+  .sug-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:1.3rem;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+  .sug-card:hover{border-color:var(--gold);box-shadow:0 6px 24px var(--shadow);transform:translateY(-2px)}
+  .sug-card.featured{border-color:var(--gold);border-width:1.5px}
+  .sug-card.featured::before{content:'Popular';position:absolute;top:10px;right:10px;
+    background:var(--gold);color:var(--ink);font-size:.7rem;font-weight:700;padding:2px 8px;
+    border-radius:20px;text-transform:uppercase;letter-spacing:.06em}
+  .sug-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    margin-bottom:1rem;font-size:1.3rem}
+  .sug-type{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;
+    color:var(--muted);margin-bottom:.3rem}
+  .sug-name{font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin-bottom:.5rem}
+  .sug-desc{font-size:.85rem;color:var(--muted);line-height:1.5;margin-bottom:1rem}
+  .sug-meta{display:flex;align-items:center;justify-content:space-between}
+  .sug-price{font-family:var(--font-display);font-size:1.3rem;font-weight:700;color:var(--sage)}
+  .sug-time{font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:.3rem}
+  .complexity-badge{display:inline-block;font-size:.7rem;font-weight:600;padding:3px 9px;
+    border-radius:20px;margin-top:.6rem;text-transform:uppercase;letter-spacing:.06em}
+  .c-low{background:var(--sage-light);color:var(--sage)}
+  .c-med{background:#fff3cd;color:#856404}
+  .c-high{background:#ffe0db;color:var(--rust)}
+
+  /* Writers grid */
+  .writers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.2rem;margin-bottom:2rem}
+  .writer-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    overflow:hidden;cursor:pointer;transition:all .25s}
+  .writer-card:hover{box-shadow:0 8px 30px var(--shadow);transform:translateY(-3px);border-color:var(--gold)}
+  .writer-header{padding:1.3rem 1.3rem .8rem;display:flex;align-items:flex-start;gap:.9rem}
+  .writer-avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;flex-shrink:0;
+    background:var(--cream);display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:var(--muted)}
+  .writer-info{flex:1}
+  .writer-name{font-family:var(--font-display);font-size:1.05rem;font-weight:700}
+  .writer-title{font-size:.82rem;color:var(--muted);margin-top:1px}
+  .writer-rating{display:flex;align-items:center;gap:.3rem;margin-top:.3rem;font-size:.82rem}
+  .stars{color:var(--gold);font-size:.9rem}
+  .rating-count{color:var(--muted)}
+  .writer-tags{padding:0 1.3rem .8rem;display:flex;flex-wrap:wrap;gap:.4rem}
+  .tag{font-size:.72rem;background:var(--cream);color:var(--muted);border-radius:20px;
+    padding:3px 9px;font-weight:500}
+  .writer-footer{padding:.8rem 1.3rem;border-top:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between}
+  .writer-rate{font-size:.85rem;color:var(--muted)}
+  .writer-rate strong{font-family:var(--font-display);font-size:1rem;color:var(--sage);font-weight:700}
+  .book-btn{background:var(--ink);color:var(--white);border:none;border-radius:7px;
+    padding:.45rem .9rem;font-family:var(--font-body);font-size:.82rem;font-weight:500;cursor:pointer;
+    transition:background .2s}
+  .book-btn:hover{background:var(--sage)}
+  .avail-dot{display:inline-block;width:7px;height:7px;border-radius:50%;
+    background:#22c55e;margin-right:4px;vertical-align:middle}
+  .avail-dot.busy{background:#ef4444}
+  .writer-stat{display:flex;gap:1rem;padding:.6rem 1.3rem;background:var(--cream);font-size:.78rem;color:var(--muted)}
+  .stat-item{display:flex;flex-direction:column;align-items:center}
+  .stat-num{font-weight:700;font-size:.95rem;color:var(--ink);font-family:var(--font-display)}
+
+  /* Price calc */
+  .calc-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:2rem}
+  .calc-card h3{font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin-bottom:1rem}
+  .calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .calc-group label{font-size:.83rem;font-weight:500;color:var(--muted);display:block;margin-bottom:.4rem}
+  .calc-group select,.calc-group input[type=range]{width:100%;border:1.5px solid var(--border);
+    border-radius:8px;padding:.55rem .8rem;font-family:var(--font-body);font-size:.88rem;
+    background:var(--paper);color:var(--ink);outline:none;transition:border .2s}
+  .calc-group select:focus{border-color:var(--gold)}
+  .calc-result{display:flex;align-items:center;justify-content:space-between;
+    margin-top:1rem;padding:1rem;background:var(--ink);border-radius:10px;color:var(--white)}
+  .calc-result-label{font-size:.85rem;color:#b0a89a}
+  .calc-result-price{font-family:var(--font-display);font-size:1.6rem;font-weight:900;color:var(--gold)}
+
+  /* ─── MODAL ─── */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;
+    align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px)}
+  .modal-overlay.open{display:flex;animation:fadeIn .25s ease}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .modal{background:var(--white);border-radius:18px;width:100%;max-width:560px;
+    max-height:90vh;overflow-y:auto;animation:slideUp .3s cubic-bezier(.34,1.2,.64,1)}
+  @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .modal-header{padding:1.5rem 1.5rem .8rem;border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--white);z-index:2}
+  .modal-header h2{font-family:var(--font-display);font-size:1.3rem;font-weight:700}
+  .modal-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);
+    width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .modal-close:hover{background:var(--cream);color:var(--ink)}
+  .modal-body{padding:1.5rem}
+  .writer-profile-header{display:flex;gap:1.2rem;align-items:flex-start;margin-bottom:1.5rem}
+  .wp-avatar{width:72px;height:72px;border-radius:50%;background:var(--cream);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-family:var(--font-display);
+    font-size:1.6rem;font-weight:700;color:var(--muted)}
+  .wp-info h3{font-family:var(--font-display);font-size:1.3rem;font-weight:700}
+  .wp-info p{font-size:.9rem;color:var(--muted);margin-top:.2rem}
+  .wp-rate-big{font-family:var(--font-display);font-size:1.2rem;color:var(--sage);font-weight:700;margin-top:.4rem}
+  .profile-section{margin-bottom:1.3rem}
+  .profile-section h4{font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;
+    color:var(--muted);margin-bottom:.6rem}
+  .profile-section p{font-size:.9rem;line-height:1.6;color:var(--ink)}
+  .skills-list{display:flex;flex-wrap:wrap;gap:.4rem}
+  .skill-badge{font-size:.78rem;background:var(--sage-light);color:var(--sage);
+    border-radius:20px;padding:4px 10px;font-weight:500}
+  .review-item{border:1px solid var(--border);border-radius:10px;padding:.9rem;margin-bottom:.6rem}
+  .review-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem;font-size:.82rem}
+  .review-name{font-weight:600}
+  .review-date{color:var(--muted)}
+  .review-text{font-size:.87rem;line-height:1.5;color:var(--ink)}
+  .booking-form{background:var(--cream);border-radius:12px;padding:1.2rem;margin-top:1rem}
+  .booking-form h4{font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:1rem}
+  .bf-group{margin-bottom:.9rem}
+  .bf-group label{font-size:.83rem;font-weight:500;color:var(--muted);display:block;margin-bottom:.3rem}
+  .bf-group select,.bf-group textarea,.bf-group input[type=text]{
+    width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.6rem .9rem;
+    font-family:var(--font-body);font-size:.9rem;background:var(--white);
+    color:var(--ink);outline:none;transition:border .2s;resize:vertical}
+  .bf-group select:focus,.bf-group textarea:focus,.bf-group input:focus{border-color:var(--gold)}
+  .booking-total{display:flex;justify-content:space-between;align-items:center;
+    padding:.8rem 0;border-top:1px solid var(--border);margin-top:.5rem}
+  .booking-total span{font-size:.85rem;color:var(--muted)}
+  .booking-total strong{font-family:var(--font-display);font-size:1.1rem;color:var(--sage)}
+  .confirm-btn{width:100%;background:var(--ink);color:var(--white);border:none;border-radius:9px;
+    padding:.85rem;font-family:var(--font-body);font-size:.95rem;font-weight:600;cursor:pointer;
+    margin-top:.6rem;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.5rem}
+  .confirm-btn:hover{background:var(--sage);transform:translateY(-1px)}
+
+  /* SUCCESS */
+  .success-toast{position:fixed;bottom:2rem;right:2rem;background:var(--sage);color:var(--white);
+    padding:1rem 1.5rem;border-radius:12px;font-size:.9rem;font-weight:500;
+    display:none;z-index:300;animation:toastIn .4s ease;align-items:center;gap:.6rem;max-width:320px}
+  .success-toast.show{display:flex}
+  @keyframes toastIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+  /* Filter tabs */
+  .filter-tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.2rem}
+  .filter-tab{background:var(--cream);border:1.5px solid var(--border);border-radius:20px;
+    padding:.4rem 1rem;font-family:var(--font-body);font-size:.83rem;font-weight:500;cursor:pointer;
+    color:var(--muted);transition:all .2s}
+  .filter-tab:hover,.filter-tab.active{background:var(--ink);color:var(--white);border-color:var(--ink)}
+
+  @media(max-width:600px){
+    .home-body{padding:1rem}
+    .hero-banner{padding:1.5rem}
+    .calc-grid{grid-template-columns:1fr}
+    .suggestion-cards{grid-template-columns:1fr}
+    .writers-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ SPLASH ═══ -->
+<div class="screen active" id="splash">
+  <canvas id="particleCanvas"></canvas>
+  <div class="splash-content">
+    <div class="splash-icon">
+      <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75z"/></svg>
+    </div>
+    <div class="splash-title">Online Writers</div>
+    <div class="splash-sub">Professional Academic & Research Writing</div>
+    <div class="splash-tagline">Lab Records · Books · Projects · Assignments · Notes</div>
+    <div class="splash-dots"><span></span><span></span><span></span></div>
+  </div>
+</div>
+
+<!-- ═══ LOGIN ═══ -->
+<div class="screen" id="login" style="flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(145deg,#f2eedf,#faf8f3);padding:2rem">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75z"/></svg>
+      </div>
+      <span class="login-logo-text">Online Writers</span>
+    </div>
+    <h2 class="login-h">Welcome Back</h2>
+    <p class="login-p">Sign in to book expert writers for your academic work</p>
+
+    <button class="google-btn" onclick="googleSignIn()">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+
+    <div class="divider"><span>or sign in with email</span></div>
+
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="emailInput" placeholder="you@university.edu" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="passInput" placeholder="••••••••" />
+    </div>
+
+    <button class="login-btn" onclick="emailSignIn()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+      Sign In Securely
+    </button>
+
+    <p class="login-footer">Don't have an account? <a onclick="emailSignIn()">Create one free</a></p>
+  </div>
+</div>
+
+<!-- ═══ HOME ═══ -->
+<div class="screen" id="home" style="flex-direction:column">
+  <nav class="navbar">
+    <div class="nav-logo">
+      <div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75z"/></svg></div>
+      <span class="nav-logo-text">Online Writers</span>
+    </div>
+    <div class="nav-right">
+      <button class="nav-btn" onclick="openModal(null,'quick')">+ New Order</button>
+      <div class="nav-avatar" title="Profile">AK</div>
+    </div>
+  </nav>
+
+  <div class="home-body">
+    <!-- Hero -->
+    <div class="hero-banner">
+      <h1>Expert Writers for Every<br>Academic Need</h1>
+      <p>Lab records, research papers, project reports, notes &amp; more — professionally done, on time.</p>
+      <div class="hero-actions">
+        <button class="btn-gold" onclick="document.getElementById('writers-section').scrollIntoView({behavior:'smooth'})">
+          Browse Writers →
+        </button>
+        <button class="btn-outline-white" onclick="document.getElementById('calc-section').scrollIntoView({behavior:'smooth'})">
+          Estimate Price
+        </button>
+      </div>
+    </div>
+
+    <!-- Price Suggestions -->
+    <div class="section-head">
+      <div class="section-title">Suggested Work Packages</div>
+      <span class="section-link" onclick="showAllSuggestions()">View all</span>
+    </div>
+    <div class="suggestion-cards" id="sugCards"></div>
+
+    <!-- Price Calculator -->
+    <div id="calc-section">
+    <div class="calc-card">
+      <h3>📊 Instant Price Estimator</h3>
+      <div class="calc-grid">
+        <div class="calc-group">
+          <label>Work Type</label>
+          <select id="calcType" onchange="calcPrice()">
+            <option value="30">Lab Record (per experiment)</option>
+            <option value="50">Assignment / Homework</option>
+            <option value="80">Notes (per subject)</option>
+            <option value="150">Mini Project Report</option>
+            <option value="250">Major Project Report</option>
+            <option value="200">Research Paper</option>
+            <option value="100">Book Summary</option>
+          </select>
+        </div>
+        <div class="calc-group">
+          <label>Complexity Level</label>
+          <select id="calcComp" onchange="calcPrice()">
+            <option value="1">Simple</option>
+            <option value="1.5" selected>Moderate</option>
+            <option value="2.2">Complex</option>
+            <option value="3">Advanced / Research Grade</option>
+          </select>
+        </div>
+        <div class="calc-group">
+          <label>Pages / Length: <strong id="pagesVal">5</strong></label>
+          <input type="range" min="1" max="50" value="5" id="calcPages" oninput="document.getElementById('pagesVal').textContent=this.value;calcPrice()" style="margin-top:.4rem;width:100%">
+        </div>
+        <div class="calc-group">
+          <label>Deadline</label>
+          <select id="calcDeadline" onchange="calcPrice()">
+            <option value="2">24 Hours (Rush)</option>
+            <option value="1.5">2–3 Days (Express)</option>
+            <option value="1.2">1 Week</option>
+            <option value="1" selected>2+ Weeks (Standard)</option>
+          </select>
+        </div>
+      </div>
+      <div class="calc-result">
+        <div>
+          <div class="calc-result-label">Estimated Price</div>
+          <div class="calc-result-price" id="calcResultPrice">₹375</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:.8rem;color:#b0a89a" id="calcDelivery">Delivery: 14+ days</div>
+          <button class="btn-gold" style="margin-top:.5rem;font-size:.82rem" onclick="openModal(null,'quick')">Book Now →</button>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <!-- Writers -->
+    <div id="writers-section">
+    <div class="section-head" style="margin-bottom:.8rem">
+      <div class="section-title">Available Writers</div>
+      <span class="section-link">See all 240+</span>
+    </div>
+    <div class="filter-tabs" id="filterTabs">
+      <button class="filter-tab active" onclick="filterWriters('All',this)">All</button>
+      <button class="filter-tab" onclick="filterWriters('Lab',this)">Lab Records</button>
+      <button class="filter-tab" onclick="filterWriters('Project',this)">Projects</button>
+      <button class="filter-tab" onclick="filterWriters('Research',this)">Research</button>
+      <button class="filter-tab" onclick="filterWriters('Notes',this)">Notes</button>
+      <button class="filter-tab" onclick="filterWriters('Assignment',this)">Assignments</button>
+    </div>
+    <div class="writers-grid" id="writersGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ WRITER MODAL ═══ -->
+<div class="modal-overlay" id="writerModal" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <h2 id="modalTitle">Writer Profile</h2>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="success-toast" id="toast">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+  <span id="toastMsg">Booking confirmed!</span>
+</div>
+
+<script>
+// ══ DATA ══
+const suggestions=[
+  {icon:'🧪',type:'Lab Record',name:'Chemistry Lab Record',desc:'Complete write-up with observations, calculations & results for chemistry practicals.',basePrice:120,time:'1–2 days',complexity:'low',tags:['Chemistry','Science']},
+  {icon:'📋',type:'Assignment',name:'Engineering Assignment',desc:'Detailed solutions with diagrams for engineering subjects like physics, circuits or maths.',basePrice:80,time:'12–24 hrs',complexity:'medium',tags:['Engineering','Maths'],featured:true},
+  {icon:'📓',type:'Notes',name:'Subject Notes Bundle',desc:'Well-structured, exam-ready notes covering full syllabus for one subject.',basePrice:200,time:'2–3 days',complexity:'low',tags:['Notes','Revision']},
+  {icon:'📁',type:'Mini Project',name:'Mini Project Report',desc:'Complete mini project report with abstract, intro, methodology and reference.',basePrice:350,time:'3–5 days',complexity:'medium',tags:['Project','Report']},
+  {icon:'📊',type:'Major Project',name:'Major Project Report',desc:'Full-length major project with literature review, diagrams, code documentation & bibliography.',basePrice:800,time:'7–14 days',complexity:'high',tags:['Project','Research'],featured:true},
+  {icon:'🔬',type:'Research Paper',name:'Research Paper Writing',desc:'Academic paper with citations, structured methodology and original analysis.',basePrice:650,time:'5–10 days',complexity:'high',tags:['Research','Paper']},
+];
+
+const writers=[
+  {id:1,name:'Priya Sharma',title:'PhD – Chemistry & Biology',avatar:'PS',rating:4.9,reviews:142,tags:['Lab Records','Chemistry','Biology','Research'],rate:150,available:true,orders:312,bio:'PhD in Organic Chemistry from IIT Madras. Specializes in lab records, research papers and science assignments with 6+ years experience.',skills:['Organic Chemistry','Biochemistry','Lab Reports','Scientific Writing','Research Methodology'],reviewsList:[{name:'Rahul K',date:'Apr 2025',stars:5,text:'Priya completed my chemistry lab record perfectly. Every calculation was accurate and well-presented.'}],filter:['Lab','Research']},
+  {id:2,name:'Arjun Mehta',title:'M.Tech – Computer Science',avatar:'AM',rating:4.8,reviews:98,tags:['Projects','Assignments','Coding','Algorithms'],rate:200,available:true,orders:210,bio:'M.Tech from NIT Trichy. Expert in CS project reports, coding assignments and technical documentation.',skills:['Python','Java','Data Structures','Project Documentation','Technical Writing'],reviewsList:[{name:'Sneha M',date:'Mar 2025',stars:5,text:'Excellent project report. Arjun added proper diagrams and explained the code well.'}],filter:['Project','Assignment']},
+  {id:3,name:'Kavitha Reddy',title:'MSc – Physics & Mathematics',avatar:'KR',rating:4.7,reviews:75,tags:['Notes','Assignments','Physics','Maths'],rate:120,available:false,orders:180,bio:'MSc Physics from Osmania University. Known for clear, exam-focused notes and concise problem-solving.',skills:['Classical Mechanics','Electromagnetism','Calculus','Statistics','Exam Notes'],reviewsList:[{name:'Deepak P',date:'Feb 2025',stars:4,text:'Good notes with clear structure. Covered entire syllabus as promised.'}],filter:['Notes','Assignment']},
+  {id:4,name:'Suresh Nair',title:'MBA + BBA – Business & Finance',avatar:'SN',rating:4.9,reviews:203,tags:['Research','Reports','Business','Finance'],rate:180,available:true,orders:450,bio:'MBA from XLRI Jamshedpur. Specializes in business research, case studies and financial analysis reports.',skills:['Market Research','Financial Analysis','Case Studies','Business Reports','Literature Review'],reviewsList:[{name:'Ananya G',date:'Apr 2025',stars:5,text:'Fantastic research paper. Proper citations, good analysis and delivered ahead of schedule!'}],filter:['Research','Assignment']},
+  {id:5,name:'Dr. Meena Pillai',title:'PhD – Biotechnology',avatar:'MP',rating:5.0,reviews:61,tags:['Lab Records','Research','Biotech','Life Sciences'],rate:250,available:true,orders:130,bio:'Post-doctoral researcher at CSIR. Writes high-quality biotech lab records and research articles with precision.',skills:['Molecular Biology','Cell Culture','Genomics','Scientific Papers','Lab Documentation'],reviewsList:[{name:'Vijay T',date:'Apr 2025',stars:5,text:'Absolutely perfect lab record. Dr. Pillai is thorough and professional.'}],filter:['Lab','Research']},
+  {id:6,name:'Rohit Joshi',title:'B.Arch + M.Plan – Design',avatar:'RJ',rating:4.6,reviews:44,tags:['Projects','Notes','Architecture','Urban Planning'],rate:170,available:true,orders:88,bio:'Architect and urban planner from SPA Delhi. Creates detailed project reports and technical notes for design disciplines.',skills:['AutoCAD Documentation','Design Reports','Site Analysis','Project Presentations','Technical Writing'],reviewsList:[{name:'Preethi L',date:'Jan 2025',stars:4,text:'Good work on the project documentation. Clean formatting and proper content.'}],filter:['Project','Notes']},
+];
+
+let currentWriter=null;
+let filteredWriters=[...writers];
+
+// ══ SPLASH → LOGIN ══
+window.addEventListener('load',()=>{
+  particleAnimation();
+  setTimeout(()=>{
+    document.getElementById('splash').classList.remove('active');
+    document.getElementById('login').classList.add('active');
+    renderSuggestions();
+    renderWriters(writers);
+    calcPrice();
+  },3500);
+});
+
+function particleAnimation(){
+  const canvas=document.getElementById('particleCanvas');
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  const pts=Array.from({length:60},()=>({
+    x:Math.random()*canvas.width,y:Math.random()*canvas.height,
+    vx:(Math.random()-.5)*.5,vy:(Math.random()-.5)*.5,
+    r:Math.random()*3+1
+  }));
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pts.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>canvas.width)p.vx*=-1;
+      if(p.y<0||p.y>canvas.height)p.vy*=-1;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle='#c89b3c';ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ══ AUTH ══
+function googleSignIn(){
+  showToast('Google sign-in simulation…','var(--gold)','var(--ink)');
+  setTimeout(goHome,800);
+}
+function emailSignIn(){
+  const email=document.getElementById('emailInput').value.trim();
+  if(!email){document.getElementById('emailInput').focus();return;}
+  goHome();
+}
+function goHome(){
+  document.getElementById('login').classList.remove('active');
+  document.getElementById('home').classList.add('active');
+}
+
+// ══ SUGGESTIONS ══
+function renderSuggestions(){
+  const el=document.getElementById('sugCards');
+  el.innerHTML=suggestions.map((s,i)=>`
+    <div class="sug-card${s.featured?' featured':''}" onclick="openModal(null,'quick',${i})">
+      <div class="sug-icon" style="background:${['#e8f5e9','#fff3e0','#e3f2fd','#f3e5f5','#fce4ec','#e0f2f1'][i%6]}">${s.icon}</div>
+      <div class="sug-type">${s.type}</div>
+      <div class="sug-name">${s.name}</div>
+      <div class="sug-desc">${s.desc}</div>
+      <span class="complexity-badge c-${s.complexity}">${{low:'Simple',medium:'Moderate',high:'Complex'}[s.complexity]}</span>
+      <div class="sug-meta">
+        <div class="sug-price">From ₹${s.basePrice}</div>
+        <div class="sug-time">⏱ ${s.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ══ WRITERS ══
+function renderWriters(list){
+  const el=document.getElementById('writersGrid');
+  el.innerHTML=list.map(w=>`
+    <div class="writer-card" onclick="openModal(${w.id})">
+      <div class="writer-header">
+        <div class="writer-avatar">${w.avatar}</div>
+        <div class="writer-info">
+          <div class="writer-name">${w.name}</div>
+          <div class="writer-title">${w.title}</div>
+          <div class="writer-rating">
+            <span class="stars">${'★'.repeat(Math.floor(w.rating))}${w.rating%1?'½':''}</span>
+            <span style="font-weight:600">${w.rating}</span>
+            <span class="rating-count">(${w.reviews})</span>
+          </div>
+        </div>
+      </div>
+      <div class="writer-stat">
+        <div class="stat-item"><span class="stat-num">${w.orders}+</span><span>Orders</span></div>
+        <div class="stat-item"><span class="stat-num">${w.rating}</span><span>Rating</span></div>
+        <div class="stat-item"><span class="stat-num">${w.available?'Now':'Busy'}</span><span>Status</span></div>
+      </div>
+      <div class="writer-tags">${w.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+      <div class="writer-footer">
+        <div class="writer-rate"><strong>₹${w.rate}/hr</strong></div>
+        <div style="display:flex;align-items:center;gap:.8rem">
+          <span style="font-size:.78rem"><span class="avail-dot${w.available?'':' busy'}"></span>${w.available?'Available':'Busy'}</span>
+          <button class="book-btn" onclick="event.stopPropagation();openModal(${w.id})">View & Book</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterWriters(tag,btn){
+  document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const list=tag==='All'?writers:writers.filter(w=>w.filter.includes(tag));
+  renderWriters(list);
+}
+
+// ══ PRICE CALC ══
+function calcPrice(){
+  const base=parseFloat(document.getElementById('calcType').value);
+  const comp=parseFloat(document.getElementById('calcComp').value);
+  const pages=parseInt(document.getElementById('calcPages').value);
+  const deadline=parseFloat(document.getElementById('calcDeadline').value);
+  const price=Math.round(base*comp*(1+pages*0.08)*deadline);
+  document.getElementById('calcResultPrice').textContent='₹'+price;
+  const days={'2':'24 hrs','1.5':'2–3 days','1.2':'1 week','1':'14+ days'}[String(deadline)];
+  document.getElementById('calcDelivery').textContent='Delivery: '+days;
+}
+
+// ══ MODAL ══
+function openModal(writerId, mode='profile', sugIdx=null){
+  const modal=document.getElementById('writerModal');
+  const body=document.getElementById('modalBody');
+  const title=document.getElementById('modalTitle');
+
+  if(mode==='quick'){
+    const s=sugIdx!==null?suggestions[sugIdx]:null;
+    title.textContent=s?`Book: ${s.name}`:'Quick Order';
+    body.innerHTML=`
+      <div style="margin-bottom:1.2rem">
+        <p style="font-size:.92rem;color:var(--muted);line-height:1.6">${s?s.desc:'Tell us what you need and we\'ll match you with the perfect writer.'}</p>
+      </div>
+      <div class="booking-form">
+        <h4>📝 Order Details</h4>
+        <div class="bf-group"><label>Work Type</label>
+          <select id="bf-type">
+            <option>Lab Record</option><option>Assignment</option><option>Notes</option>
+            <option>Mini Project</option><option>Major Project</option><option>Research Paper</option><option>Book Summary</option>
+          </select></div>
+        <div class="bf-group"><label>Subject / Topic</label><input type="text" placeholder="e.g. Organic Chemistry – Ester Synthesis"></div>
+        <div class="bf-group"><label>Deadline</label>
+          <select><option>24 Hours (Rush)</option><option>2–3 Days</option><option>1 Week</option><option>2+ Weeks</option></select></div>
+        <div class="bf-group"><label>Additional Notes</label>
+          <textarea rows="3" placeholder="Specific requirements, format, marks breakdown..."></textarea></div>
+        <div class="booking-total">
+          <span>Estimated Price</span>
+          <strong>₹${s?Math.round(s.basePrice*1.5):'—'}</strong>
+        </div>
+        <button class="confirm-btn" onclick="confirmBooking('a writer')">
+          ✓ Confirm Order
+        </button>
+      </div>
+    `;
+  } else {
+    const w=writers.find(x=>x.id===writerId);
+    if(!w)return;
+    currentWriter=w;
+    title.textContent='Writer Profile';
+    body.innerHTML=`
+      <div class="writer-profile-header">
+        <div class="wp-avatar">${w.avatar}</div>
+        <div class="wp-info">
+          <h3>${w.name}</h3>
+          <p>${w.title}</p>
+          <div class="writer-rating">
+            <span class="stars">${'★'.repeat(Math.floor(w.rating))}</span>
+            <strong>${w.rating}</strong>
+            <span style="color:var(--muted);font-size:.82rem">(${w.reviews} reviews) · ${w.orders}+ orders</span>
+          </div>
+          <div class="wp-rate-big">₹${w.rate} / hour</div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <h4>About</h4>
+        <p>${w.bio}</p>
+      </div>
+
+      <div class="profile-section">
+        <h4>Skills &amp; Specializations</h4>
+        <div class="skills-list">${w.skills.map(s=>`<span class="skill-badge">${s}</span>`).join('')}</div>
+      </div>
+
+      <div class="profile-section">
+        <h4>Work Categories</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:.4rem">${w.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+      </div>
+
+      <div class="profile-section">
+        <h4>Recent Reviews</h4>
+        ${w.reviewsList.map(r=>`
+          <div class="review-item">
+            <div class="review-meta">
+              <span class="review-name">${r.name} <span style="color:var(--gold)">${'★'.repeat(r.stars)}</span></span>
+              <span class="review-date">${r.date}</span>
+            </div>
+            <div class="review-text">${r.text}</div>
+          </div>`).join('')}
+      </div>
+
+      <div class="booking-form">
+        <h4>📝 Book ${w.name}</h4>
+        <div class="bf-group"><label>Work Type</label>
+          <select id="bf-work" onchange="updateBookingPrice(${w.rate})">
+            <option value="2">Lab Record</option><option value="3">Assignment</option>
+            <option value="4">Notes</option><option value="6">Mini Project</option>
+            <option value="12">Major Project</option><option value="10">Research Paper</option>
+          </select></div>
+        <div class="bf-group"><label>Subject / Topic</label><input type="text" placeholder="e.g. Operating Systems – Process Scheduling"></div>
+        <div class="bf-group"><label>Deadline</label>
+          <select onchange="updateBookingPrice(${w.rate})">
+            <option value="2">24 Hours (Rush +100%)</option>
+            <option value="1.5">2–3 Days (+50%)</option>
+            <option value="1.2">1 Week (+20%)</option>
+            <option value="1" selected>2+ Weeks (Standard)</option>
+          </select></div>
+        <div class="bf-group"><label>Special Instructions</label>
+          <textarea rows="3" placeholder="Format, marks scheme, university guidelines..."></textarea></div>
+        <div class="booking-total">
+          <span>Estimated Total</span>
+          <strong id="bookingPrice">₹${w.rate*4}</strong>
+        </div>
+        <button class="confirm-btn" onclick="confirmBooking('${w.name}')">
+          ✓ Book ${w.name.split(' ')[0]} Now
+        </button>
+      </div>
+    `;
+  }
+  modal.classList.add('open');
+}
+
+function updateBookingPrice(rate){
+  const work=document.getElementById('bf-work');
+  if(!work)return;
+  const hrs=parseFloat(work.value)||4;
+  const price=Math.round(rate*hrs);
+  const el=document.getElementById('bookingPrice');
+  if(el)el.textContent='₹'+price;
+}
+
+function closeModal(e){
+  if(e.target.id==='writerModal') closeModalDirect();
+}
+function closeModalDirect(){
+  document.getElementById('writerModal').classList.remove('open');
+}
+
+function confirmBooking(name){
+  closeModalDirect();
+  showToast(`Booking confirmed with ${name}! You'll receive a confirmation email shortly.`);
+}
+
+function showAllSuggestions(){
+  document.getElementById('writers-section').scrollIntoView({behavior:'smooth'});
+}
+
+function showToast(msg,bg,color){
+  const t=document.getElementById('toast');
+  const m=document.getElementById('toastMsg');
+  m.textContent=msg;
+  if(bg)t.style.background=bg;
+  if(color)t.style.color=color;
+  t.classList.add('show');
+  setTimeout(()=>{t.classList.remove('show');t.style.background='';t.style.color='';},4000);
+}
+
+// Init
+renderSuggestions();
+renderWriters(writers);
+calcPrice();
+</script>
+</body>
+</html>
